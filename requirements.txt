@@ -1,0 +1,15 @@
+# Traffic Simulation Project Dependencies
+# Generated: 2025-11-02
+
+# Core scientific computing
+numpy>=1.24.0
+pandas>=2.0.0
+
+# Plotting and visualization
+matplotlib>=3.7.0
+
+# Image processing
+Pillow>=10.0.0
+
+# Enhanced serialization for multiprocessing
+dill>=0.3.7

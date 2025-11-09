@@ -1,0 +1,67 @@
+hwy30 7: front -> exit
+front 9: puanoa -> hwy30
+hwy30 6: keawe -> front
+bypass 1: lahainaluna -> keawe
+keawe 2: oil road -> bypass
+lahainaluna right 10: bypass <- source
+keawe 1: gateway -> oil road
+keawe 0: hwy30 -> gateway
+komo mai
+hwy30 5: kenui -> keawe
+kalena
+lahainaluna right 9: dirt road <- bypass
+bypass 0: source -> lahainaluna
+lahainaluna right 8: kalena <- dirt road
+puanoa
+front 8: kenui -> puanoa
+kenui right 1: kahoma village <- wainee
+hwy30 4: papalaua -> kenui
+kahoma village way
+wainee 7: baker -> kenui
+lahainaluna right 7: kelawea <- kalena
+kenui right 0: front <- kahoma village
+kuhua
+kale
+front 7: baker -> kenui
+lahainaluna right 6: paunau <- kelawea
+lahainaluna right 5: kale <- paunau
+paunau
+baker right
+wainee 6: papalaua -> baker
+lahainaluna right 4: pauoa <- kale
+baker left
+lahainaluna right 3: kuhua <- pauoa
+front 6: papalaua -> baker
+hwy30 3: lauhainaluna -> papalaua
+pauoa
+papalaua right 1: wainee <- hwy30
+lahainaluna right 2: hwy30 <- kuhua
+wainee 5: lahainaluna -> papalaua
+papalaua right 0: front <- wainee
+hwy30 2: dickenson -> lahainaluna
+lahainaluna right 1: wainee <- hwy30
+front 5: wahie -> papalaua
+panaewa
+lahainaluna right 0: front <- wainee
+wainee 4: panaewa -> lahainaluna
+wahie
+wainee 3: dickenson -> panaewa
+front 4: lahainaluna -> wahie
+hwy30 1: prison -> dickenson
+dickenson right 2: wainee <- hwy30
+front 3: dickenson -> lahainaluna
+luakini up
+wainee 2: hale -> dickenson
+dickenson right 1: luakini <- wainee
+dickenson right 0: front <- luakini
+hale
+luakini down
+wainee 1: prison -> hale
+front 2: canal -> dickenson
+prison right 1: wainee <- hwy30
+hwy30 0: source -> prison
+prison right 0: front <- wainee
+wainee 0: source -> prison
+canal
+front 1: prison -> canal
+front 0: source -> prison
