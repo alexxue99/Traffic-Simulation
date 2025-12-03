@@ -15,13 +15,13 @@ The Traffic project is designed to be flexible and extensible, allowing users to
 ## Experiment Phases
 
 - **Phase 1 experiment:** Simple experiment that simulates baseline traffic conditions on the base network to establish reference metrics for normal network operation.
-- **Phase 2 experiment:** Tests the effects of optimizing the junction preferences on Lahaina across several hours. Coming soon.
-- **Phase 3 experiment:** Expands on phase 2 by simulating Lahaina for a longer period of time, and tests how different urgencies on source roads affect the overall outcome. Coming soon.
+- **Phase 2 experiment:** Tests the effects of optimizing the junction preferences on Lahaina across several hours.
+- **Phase 3 experiment:** Expands on phase 2 by simulating Lahaina for a longer period of time, and tests how different urgencies on source roads affect the overall outcome.
 
 ## Getting Started
 See [requirements.txt](requirements.txt) for a list of required dependencies.
 
-[phase1_experiment.py](phase1_experiment.py) can be run to verify our results. 
+[phase1_experiment.py](phase1_experiment.py), [phase2_experiment.py](phase2_experiment.py), and [phase3_experiment.py](phase3_experiment.py) can be run to verify our results. These experiments run the networks in various scenarios. The plotting files [plot_ntopt_comparison.py](plot_ntopt_comparison.py), [plot_phase2_ntopt_comparison.py](plot_phase2_ntopt_comparison.py), and [plot_phase3_gamma2_comparison.py](plot_phase3_gamma2_comparison.py) produce the plots in the associated experiments' folders that help visualize the results.
 
 [base_script.py](base_script.py) can be run by itself to obtain a simple animation and picture of the base network run for a very short amount of time.
 
