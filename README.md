@@ -38,6 +38,8 @@ To get the animation and picture creation to work, you will need several files f
 - A picture showing where the junctions are, e.g. see [junctions.png](Lahaina_network_info/junctions.png).
 - A picture separating the two directions of mostly horizontal roads, e.g. see [left_right.png](Lahaina_network_info/left_right.png). Similarly, a picture separating the two directions of mostly vertical roads, e.g. see [up_down.png](Lahaina_network_info/up_down.png). 
 
-After these files are ready, see [base_script.py](base_script.py) for an example pipeline on how to run the network and create animations and pictures.
+The toy notebook also provides an example on how to create the animation. All the required tools for creating the animation and picture can be found in [picture_tools/](toy/picture_tools/). We have included [process_roads.py](toy/picture_tools/process_roads.py) and [process_distances.py](toy/picture_tools/process_distances.py). These files used the aforementioned skimage in order to generate [label_map.npy](toy/picture_tools/label_map.npy) and [pixel_ratios.json](toy/picture_tools/pixel_ratios.json).
+
+After these files are ready, see the Plots section in the toy notebook for an example pipeline on how to run the network and create pictures. [base_script.py](base_script.py) further shows how to create animations after running a network.
 
 

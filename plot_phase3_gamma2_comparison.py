@@ -11,11 +11,13 @@ BASE_DIR = "phase3_experiments"  # which parent folder to look for results
 DT = 0.1  # Time step for scaling values
 
 # Global font size parameters - Modify these to change text sizes globally
-GLOBAL_FONT_SIZE = 20
-GLOBAL_TITLE_SIZE = 18
-GLOBAL_LABEL_SIZE = 18
-GLOBAL_TICK_SIZE = 18
-GLOBAL_LEGEND_SIZE = 16
+GLOBAL_FONT_SIZE = 32
+GLOBAL_TITLE_SIZE = 27
+GLOBAL_LABEL_SIZE = 27
+GLOBAL_TICK_SIZE = 20
+GLOBAL_LEGEND_SIZE = 20
+TRANSITION_FONT_SIZE = 25
+LINE_WIDTH = 5
 
 def read_csv_by_timestep(csv_path, time_col_index=0, value_col_index=1, timestep_interval=1000):
     """
@@ -219,21 +221,21 @@ def plot_gamma2_comparison(gamma1_value, time_col_index=0, value_col_index=1, ti
                         cumulative_time = time_vals[-1]
                         cumulative_value = data_vals[-1]
                         print(f"Gamma2={gamma2_val}, {network_type}: Added {len(time_vals)} points, final time={cumulative_time}, final value={cumulative_value}")
-                else:  # Subsequent CSVs - collect all points
+                else:  # Subsequent CSVs - add previous CSV's final value to ALL points
                     time_vals, data_vals, cols = read_csv_by_timestep(csv_path, time_col_index, value_col_index, timestep_interval)
                     if time_vals is not None and data_vals is not None:
                         if column_names is None:
                             column_names = cols
                         
-                        # For subsequent CSVs, we want the final value only (like in main function)
-                        if time_vals and data_vals:
-                            final_time = time_vals[-1]  # Take the last time value
-                            final_data = data_vals[-1]  # Take the last data value
-                            cumulative_time += final_time
-                            cumulative_value += final_data
-                            all_cumulative_times.append(cumulative_time)
-                            all_cumulative_values.append(cumulative_value)
-                            print(f"Gamma2={gamma2_val}, {network_type}: time={final_time}, value={final_data}, cumulative_time={cumulative_time}, cumulative_value={cumulative_value}")
+                        # Add all points from this CSV, offset by the previous CSV's final cumulative value
+                        for time_val, data_val in zip(time_vals, data_vals):
+                            all_cumulative_times.append(cumulative_time + time_val)
+                            all_cumulative_values.append(cumulative_value + data_val)
+                        
+                        # Update the cumulative offset to the final value of this CSV
+                        cumulative_time += time_vals[-1]
+                        cumulative_value += data_vals[-1]
+                        print(f"Gamma2={gamma2_val}, {network_type}: Added {len(time_vals)} points, cumulative_time={cumulative_time}, cumulative_value={cumulative_value}")
         
         # Now create equidistant sampling from the complete cumulative data
         if all_cumulative_times:
@@ -311,7 +313,7 @@ def plot_gamma2_comparison(gamma1_value, time_col_index=0, value_col_index=1, ti
     for i, gamma2_val in enumerate(sorted_gamma2_values):
         data = gamma2_data[gamma2_val]
         plt.plot(data['cumulative_times'], data['cumulative_values'],
-                'o-', linewidth=2, markersize=3, color=colors[i],
+                'o-', linewidth=LINE_WIDTH, markersize=3, color=colors[i],
                 label=f'$\\gamma_2$ = {gamma2_val}', alpha=0.8)
     
     # Add vertical lines and labels for network transitions
@@ -319,12 +321,12 @@ def plot_gamma2_comparison(gamma1_value, time_col_index=0, value_col_index=1, ti
         y_min, y_max = plt.ylim()
         for i, (transition_time, network_name) in enumerate(transition_points[:-1]):  # Exclude the last point
             # Add vertical dotted line
-            plt.axvline(x=transition_time, color='gray', linestyle='--', alpha=0.6, linewidth=1)
+            plt.axvline(x=transition_time, color='gray', linestyle='--', alpha=0.6, linewidth=2)
             
             # Add label at the top of the plot
             label_text = f"{network_name} → {transition_points[i+1][1] if i+1 < len(transition_points) else 'End'}"
             plt.text(transition_time, y_max * 0.95, label_text,
-                    rotation=90, ha='right', va='top', fontsize=16, alpha=0.8)
+                    rotation=90, ha='right', va='top', fontsize=TRANSITION_FONT_SIZE, alpha=0.8)
     
     # Get column names for labeling
     column_names = None
@@ -345,16 +347,22 @@ def plot_gamma2_comparison(gamma1_value, time_col_index=0, value_col_index=1, ti
         y_label = f'Cumulative {format_label(column_names[value_col_index])}'
         plt.xlabel(x_label)
         plt.ylabel(y_label)
-        plt.suptitle(f'{y_label} vs {x_label} for Different $\\gamma_2$ Values ($\\gamma_1$ = {gamma1_value})', x=0.5, y=0.95, fontsize=GLOBAL_TITLE_SIZE)
+        # Split title across two lines and use suptitle to center over plot+legend
+        title_line1 = f'{y_label} vs {x_label}'
+        title_line2 = f'for Different $\\gamma_2$ Values ($\\gamma_1$ = {gamma1_value})'
+        plt.gcf().suptitle(f'{title_line1}\n{title_line2}', fontsize=GLOBAL_TITLE_SIZE, y=0.98)
     else:
         plt.xlabel(f'Cumulative Column {time_col_index}')
         plt.ylabel(f'Cumulative Column {value_col_index}')
-        plt.suptitle(f'Cumulative Column {value_col_index} vs Cumulative Column {time_col_index} for Different $\\gamma_2$ Values ($\\gamma$ = {gamma1_value})', x=0.5, y=0.95, fontsize=GLOBAL_TITLE_SIZE)
+        # Split title across two lines and use suptitle to center over plot+legend
+        title_line1 = f'Cumulative Column {value_col_index} vs Cumulative Column {time_col_index}'
+        title_line2 = f'for Different $\\gamma_2$ Values ($\\gamma$ = {gamma1_value})'
+        plt.gcf().suptitle(f'{title_line1}\n{title_line2}', fontsize=GLOBAL_TITLE_SIZE, y=0.98)
     
     plt.grid(True, alpha=0.3)
     plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-    plt.subplots_adjust(top=0.9)  # Adjust top margin for title
-    plt.tight_layout(rect=(0, 0, 1, 0.92))  # Leave more space for title at top
+    
+    plt.tight_layout()
 
     # Save the plot
     if column_names:
@@ -434,21 +442,21 @@ def plot_specific_gamma2_comparison(gamma1_value, gamma2_values, time_col_index=
                         cumulative_time = time_vals[-1]
                         cumulative_value = data_vals[-1]
                         print(f"Gamma2={gamma2_str}, {network_type}: Added {len(time_vals)} points, final time={cumulative_time}, final value={cumulative_value}")
-                else:  # Subsequent CSVs - collect all points
+                else:  # Subsequent CSVs - add previous CSV's final value to ALL points
                     time_vals, data_vals, cols = read_csv_by_timestep(csv_path, time_col_index, value_col_index, timestep_interval)
                     if time_vals is not None and data_vals is not None:
                         if column_names is None:
                             column_names = cols
                         
-                        # For subsequent CSVs, we want the final value only (like in main function)
-                        if time_vals and data_vals:
-                            final_time = time_vals[-1]  # Take the last time value
-                            final_data = data_vals[-1]  # Take the last data value
-                            cumulative_time += final_time
-                            cumulative_value += final_data
-                            all_cumulative_times.append(cumulative_time)
-                            all_cumulative_values.append(cumulative_value)
-                            print(f"Gamma2={gamma2_str}, {network_type}: time={final_time}, value={final_data}, cumulative_time={cumulative_time}, cumulative_value={cumulative_value}")
+                        # Add all points from this CSV, offset by the previous CSV's final cumulative value
+                        for time_val, data_val in zip(time_vals, data_vals):
+                            all_cumulative_times.append(cumulative_time + time_val)
+                            all_cumulative_values.append(cumulative_value + data_val)
+                        
+                        # Update the cumulative offset to the final value of this CSV
+                        cumulative_time += time_vals[-1]
+                        cumulative_value += data_vals[-1]
+                        print(f"Gamma2={gamma2_str}, {network_type}: Added {len(time_vals)} points, cumulative_time={cumulative_time}, cumulative_value={cumulative_value}")
         
         # Now create equidistant sampling from the complete cumulative data
         if all_cumulative_times:
@@ -519,7 +527,7 @@ def plot_specific_gamma2_comparison(gamma1_value, gamma2_values, time_col_index=
     # Plot each gamma2 value as a separate line
     for i, (gamma2_str, data) in enumerate(sorted(gamma2_data.items(), key=lambda x: float(x[0]))):
         plt.plot(data['cumulative_times'], data['cumulative_values'],
-                'o-', linewidth=2, markersize=3, color=colors[i],
+                'o-', linewidth=LINE_WIDTH, markersize=3, color=colors[i],
                 label=f'$\\gamma_2$ = {gamma2_str}', alpha=0.8)
     
     # Add vertical lines and labels for network transitions
@@ -527,12 +535,12 @@ def plot_specific_gamma2_comparison(gamma1_value, gamma2_values, time_col_index=
         y_min, y_max = plt.ylim()
         for i, (transition_time, network_name) in enumerate(transition_points[:-1]):  # Exclude the last point
             # Add vertical dotted line
-            plt.axvline(x=transition_time, color='gray', linestyle='--', alpha=0.6, linewidth=1)
-            
+            plt.axvline(x=transition_time, color='gray', linestyle='--', alpha=0.6, linewidth=2)
+
             # Add label at the top of the plot
             label_text = f"{network_name} → {transition_points[i+1][1] if i+1 < len(transition_points) else 'End'}"
             plt.text(transition_time, y_max * 0.95, label_text,
-                    rotation=90, ha='right', va='top', fontsize=9, alpha=0.8)
+                    rotation=90, ha='right', va='top', fontsize=TRANSITION_FONT_SIZE, alpha=0.8)
     
     # Get column names for labeling
     column_names = None
@@ -553,16 +561,22 @@ def plot_specific_gamma2_comparison(gamma1_value, gamma2_values, time_col_index=
         y_label = f'Cumulative {format_label(column_names[value_col_index])}'
         plt.xlabel(x_label)
         plt.ylabel(y_label)
-        plt.suptitle(f'{y_label} vs {x_label} - Selected $\\gamma_2$ Values ($\\gamma$ = {gamma1_value})', x=0.5, y=0.95, fontsize=GLOBAL_TITLE_SIZE)
+        # Split title across two lines and use suptitle to center over plot+legend
+        title_line1 = f'{y_label} vs {x_label}'
+        title_line2 = f'- Selected $\\gamma_2$ Values ($\\gamma$ = {gamma1_value})'
+        plt.gcf().suptitle(f'{title_line1}\n{title_line2}', fontsize=GLOBAL_TITLE_SIZE, y=0.98)
     else:
         plt.xlabel(f'Cumulative Column {time_col_index}')
         plt.ylabel(f'Cumulative Column {value_col_index}')
-        plt.suptitle(f'Cumulative Column {value_col_index} vs Cumulative Column {time_col_index} - Selected $\\gamma_2$ Values ($\\gamma$ = {gamma1_value})', x=0.5, y=0.95, fontsize=GLOBAL_TITLE_SIZE)
+        # Split title across two lines and use suptitle to center over plot+legend
+        title_line1 = f'Cumulative Column {value_col_index} vs Cumulative Column {time_col_index}'
+        title_line2 = f'- Selected $\\gamma_2$ Values ($\\gamma$ = {gamma1_value})'
+        plt.gcf().suptitle(f'{title_line1}\n{title_line2}', fontsize=GLOBAL_TITLE_SIZE, y=0.98)
     
     plt.grid(True, alpha=0.3)
     plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-    plt.subplots_adjust(top=0.9)  # Adjust top margin for title
-    plt.tight_layout(rect=(0, 0, 1, 0.9))  # Leave more space for title at top
+    
+    plt.tight_layout()
 
     # Save the plot
     if column_names:
@@ -666,7 +680,7 @@ def plot_single_network_gamma2_comparison(gamma1_value, network_type, gamma2_val
     # Plot each gamma2 value as a separate line
     for i, (gamma2_str, data) in enumerate(sorted(gamma2_data.items(), key=lambda x: float(x[0]))):
         plt.plot(data['times'], data['values'],
-                'o-', linewidth=2, markersize=3, color=colors[i],
+                'o-', linewidth=LINE_WIDTH, markersize=3, color=colors[i],
                 label=f'$\\gamma_2$ = {gamma2_str}', alpha=0.8)
     
     # Get column names for labeling
@@ -688,16 +702,22 @@ def plot_single_network_gamma2_comparison(gamma1_value, network_type, gamma2_val
         y_label = format_label(column_names[value_col_index])
         plt.xlabel(x_label)
         plt.ylabel(y_label)
-        plt.suptitle(f'{y_label} vs {x_label} for {network_type} - Different $\\gamma_2$ Values ($\\gamma$ = {gamma1_value})', x=0.5, y=0.95, fontsize=GLOBAL_TITLE_SIZE)
+        # Split title across two lines and use suptitle to center over plot+legend
+        title_line1 = f'{y_label} vs {x_label} for {network_type}'
+        title_line2 = f'- Different $\\gamma_2$ Values ($\\gamma$ = {gamma1_value})'
+        plt.gcf().suptitle(f'{title_line1}\n{title_line2}', fontsize=GLOBAL_TITLE_SIZE, y=0.98)
     else:
         plt.xlabel(f'Column {time_col_index}')
         plt.ylabel(f'Column {value_col_index}')
-        plt.suptitle(f'Column {value_col_index} vs Column {time_col_index} for {network_type} - Different $\\gamma_2$ Values ($\\gamma$ = {gamma1_value})', x=0.5, y=0.95, fontsize=GLOBAL_TITLE_SIZE)
+        # Split title across two lines and use suptitle to center over plot+legend
+        title_line1 = f'Column {value_col_index} vs Column {time_col_index} for {network_type}'
+        title_line2 = f'- Different $\\gamma_2$ Values ($\\gamma$ = {gamma1_value})'
+        plt.gcf().suptitle(f'{title_line1}\n{title_line2}', fontsize=GLOBAL_TITLE_SIZE, y=0.98)
     
     plt.grid(True, alpha=0.3)
     plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-    plt.subplots_adjust(top=0.9)  # Adjust top margin for title
-    plt.tight_layout(rect=(0, 0, 1, 0.9))  # Leave more space for title at top
+    
+    plt.tight_layout()
 
     # Save the plot
     if column_names:

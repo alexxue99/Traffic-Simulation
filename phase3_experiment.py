@@ -1,6 +1,3 @@
-"""
-Gamma + ntopt Parameter Sweep Experiment
-"""
 import os
 
 from am_networks_setup import setup_am_networks
@@ -23,8 +20,6 @@ def run_phase3_experiment(gamma_values, gamma2_values):
     print("=" * 50)
     
     for i, gamma_val in enumerate(gamma_values):
-        if i < 5:
-            continue  # Skip already done experiments
         nt_opt_val = 10  # Fixed nt_opt value for phase 3
         gamma2_val = gamma2_values[i]
         print(f"\nExperiment {i+1}/{len(gamma_values)}: gamma = {gamma_val:.4f}")

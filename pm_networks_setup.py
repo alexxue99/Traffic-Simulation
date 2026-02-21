@@ -27,7 +27,7 @@ def create_pm_special_roads(hwy30, bypass, front, wainee):
     return hwy30_down, bypass_down, front_down, wainee_down
 
 
-def setup_pm_networks(gamma, gamma2=None):
+def setup_pm_networks(gamma, gamma2=None, phase4=False):
     """Create and return pm networks based on the given gamma. gamma2 controls the urgency modification of some sources."""
     all_roads = create_all_roads(gamma)
 
@@ -39,9 +39,9 @@ def setup_pm_networks(gamma, gamma2=None):
     gateway, oilroad, puanoa_pl, baker_left, wahie, canal, \
     baker_right, panaewa, hale, kahoma_village, luakini_up, luakini_down = all_roads
     
+    
     hwy30_down, bypass_down, front_down, wainee_down = create_pm_special_roads(hwy30, bypass, front, wainee)
-
-    road_list_pm = (hwy30 + hwy30_down
+    road_list_pm = (hwy30 + hwy30_down 
                 + luna_left[2:-1] + luna_right[2:-1] + [luna_right[0]]
                 + front + front_down + wainee + wainee_down
                 + bypass + keawe
@@ -53,6 +53,7 @@ def setup_pm_networks(gamma, gamma2=None):
                 + dickenson_left + dickenson_right
                 + prison_left + prison_right
                 + [gateway, oilroad, dirtroad, bypass_down])
+        
     
     sources = [kuhua, pauoa, kale, paunau_st, komomai, kalena, dirtroad]
     sources_default = [puanoa_pl, baker_left, wahie, canal, baker_right, panaewa,
@@ -84,7 +85,7 @@ def setup_pm_networks(gamma, gamma2=None):
     h6p.set_roads_in(hwy30[5], keawe[0]).set_roads_out(hwy30_down[5], hwy30[6])
 
     h7p = Junction("h7") # is exit junction
-    h7p.set_roads_in(hwy30[6], front[9]).set_roads_out(hwy30[7], front_down[9])
+    h7p.set_roads_in(hwy30[6], front[9]).set_roads_out(hwy30[7], front_down[9]) 
 
 
     ### FRONT
@@ -211,10 +212,21 @@ def setup_pm_networks(gamma, gamma2=None):
 
     network_pm_base.modify_urgency(half_sources, gamma)
     network_pm_base.check_roads_in_roadlist(road_list_pm_base)
+    
+    # modify hwy30 last road for phase 4
+    if phase4:
+        hwy30[-1].set_lanes(2)
+        # Re-initialize the road to account for lane change
+        hwy30[-1].set_coefficients(None, None, None)
+        hwy30[-1].set_up()
+        hwy30[-1].set_grid(Road.dt)
+        # Re-compute initial density from the existing function
+        if hwy30[-1].init_density_func is not None:
+            hwy30[-1].set_initial_density(hwy30[-1].init_density_func(hwy30[-1].cells))
+        
 
     ## By default, h7p is the exit road, and needs to be run once to initialize the distances
     network_pm_base.compute_distances(h7p)  
-
     network_pm_2 = copy.deepcopy(__network_pm)
     road_list_pm_2 = copy.deepcopy(road_list_pm)
 

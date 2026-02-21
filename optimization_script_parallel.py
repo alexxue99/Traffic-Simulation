@@ -289,14 +289,15 @@ def optimize_network_parallel(network, nt, hyperparameters, save_file_name, by_d
                 f.write(f"{p}\n")
     
     # Save the loss plot
-    fig = plt.figure(figsize=(6.0, 4.0))
-    plt.xlabel('Iteration')
-    plt.ylabel('Weighted Time-Integrated Cars')
-    plt.grid()
-    plt.plot([i for i in range(1, linesearch_num + 1)], -np.array(loss_sto), color='C0', linestyle='-', linewidth=2)
-    plt.title('Weighted Time Integrated Cars on Main Roads (Parallelized)')
-    plt.savefig(save_file_name.replace('.txt', '_loss_parallel.png'))
-    plt.close(fig)
+    if save_file:
+        fig = plt.figure(figsize=(6.0, 4.0))
+        plt.xlabel('Iteration')
+        plt.ylabel('Weighted Time-Integrated Cars')
+        plt.grid()
+        plt.plot([i for i in range(1, linesearch_num + 1)], -np.array(loss_sto), color='C0', linestyle='-', linewidth=2)
+        plt.title('Weighted Time Integrated Cars on Main Roads (Parallelized)')
+        plt.savefig(save_file_name.replace('.txt', '_loss_parallel.png'))
+        plt.close(fig)
 
     return para
 

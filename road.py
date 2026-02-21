@@ -210,6 +210,8 @@ class Road(object):
         self.time_steps_elapsed = 0
         self.current_density = self.init_density_func(self.cells)
         self.density_history = [self.current_density,]
+        self.left_flux_from_junction = None
+        self.right_flux_from_junction = None
 
     def reset_by_data(self):
         # resets cars exited and initial density, and time_steps_elapsed, using initial_density
@@ -334,6 +336,9 @@ class Road(object):
 
     def get_length(self):
         return self.length
+    
+    def get_lanes(self):
+        return self.lanes
 
     def get_flux(self):
         return (self.flux, self.sigma, self.max_wave_speed, self.flux_to_rho_m, self.flux_to_rho_p)

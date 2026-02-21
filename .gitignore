@@ -1,0 +1,4 @@
+*.kra
+*.kra~
+*.png~
+__pycache__*

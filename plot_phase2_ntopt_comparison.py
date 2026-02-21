@@ -10,11 +10,13 @@ import numpy as np
 BASE_DIR = "phase2_experiments_trials"  # which parent folder to look for results
 
 # Global font size parameters - Modify these to change text sizes globally
-GLOBAL_FONT_SIZE = 18
-GLOBAL_TITLE_SIZE = 20
-GLOBAL_LABEL_SIZE = 18
-GLOBAL_TICK_SIZE = 14
-GLOBAL_LEGEND_SIZE = 16
+GLOBAL_FONT_SIZE = 32
+GLOBAL_TITLE_SIZE = 27
+GLOBAL_LABEL_SIZE = 27
+GLOBAL_TICK_SIZE = 20
+GLOBAL_LEGEND_SIZE = 20
+TRANSITION_FONT_SIZE = 25
+
 
 def read_csv_by_timestep(csv_path, time_col_index=0, value_col_index=1, timestep_interval=1000):
     """
@@ -166,10 +168,29 @@ def format_column_name(column_name):
     Returns:
         str: Formatted column name
     """
-    # Replace underscores with spaces and capitalize each word
-    formatted = ' '.join(word.capitalize() for word in column_name.split('_'))
-    return formatted
+    # Special case for time_seconds
+    if column_name.lower() == 'time_seconds':
+        print("using special formatting for time_seconds")
+        return 'Time (seconds)'
+    else:
+        print("using default column name formatting for ", column_name)
+        # Replace underscores with spaces and capitalize each word
+        formatted = ' '.join(word.capitalize() for word in column_name.split('_'))
+        return formatted
 
+def _lock_formatted_axis_labels(fig, axes, time_col_name, value_col_name):
+    """
+    Re-apply formatted axis labels AFTER layout and BEFORE saving.
+    Prevents Matplotlib from reverting labels during bbox_inches saves.
+    """
+    xlab = f"Cumulative {format_column_name(time_col_name)}"
+    ylab = f"Cumulative {format_column_name(value_col_name)}"
+
+    for ax in axes:
+        ax.set_xlabel(xlab)
+        ax.set_ylabel(ylab)
+
+    fig.canvas.draw()  # lock text layout
 
 def plot_ntopt_comparison(gamma_value, time_col_index=0, value_col_index=1, timestep_interval=1000):
     """
@@ -338,7 +359,7 @@ def plot_ntopt_comparison(gamma_value, time_col_index=0, value_col_index=1, time
             # Add label at the top of the plot
             label_text = f"{network_name} → {transition_points[i+1][1] if i+1 < len(transition_points) else 'End'}"
             plt.text(transition_time, y_max * 0.95, label_text,
-                    rotation=90, ha='right', va='top', fontsize=9, alpha=0.8)
+                    rotation=90, ha='right', va='top', fontsize=TRANSITION_FONT_SIZE, alpha=0.8)
     
     # Get column names for labeling
     column_names = None
@@ -377,6 +398,8 @@ def plot_ntopt_comparison(gamma_value, time_col_index=0, value_col_index=1, time
         save_path = os.path.join(save_dir, "plot.png")
 
         # Save the plot
+        
+        
         plt.savefig(save_path, dpi=300, bbox_inches='tight')
 
         print(f"saved figure to {save_dir}")
@@ -555,7 +578,7 @@ def plot_ntopt_comparison_with_differences(gamma_value, time_col_index=0, value_
             # Add label at the top of the plot
             label_text = f"{network_name} → {transition_points[i+1][1] if i+1 < len(transition_points) else 'End'}"
             ax1.text(transition_time, y_max * 0.95, label_text,
-                    rotation=90, ha='right', va='top', fontsize=9, alpha=0.8)
+                    rotation=90, ha='right', va='top', fontsize=TRANSITION_FONT_SIZE, alpha=0.8)
     
     # Subplot 2: Percentage difference from baseline
     for i, ntopt_val in enumerate(sorted_ntopt_values[1:], 1):  # Skip baseline
@@ -579,7 +602,7 @@ def plot_ntopt_comparison_with_differences(gamma_value, time_col_index=0, value_
             # Add label at the top of the plot
             label_text = f"{network_name} → {transition_points[i+1][1] if i+1 < len(transition_points) else 'End'}"
             ax2.text(transition_time, y_max * 0.95, label_text,
-                    rotation=90, ha='right', va='top', fontsize=9, alpha=0.8)
+                    rotation=90, ha='right', va='top', fontsize=TRANSITION_FONT_SIZE, alpha=0.8)
     
     # Subplot 3: Normalized values (divide by baseline)
     for i, ntopt_val in enumerate(sorted_ntopt_values):
@@ -606,7 +629,7 @@ def plot_ntopt_comparison_with_differences(gamma_value, time_col_index=0, value_
             # Add label at the top of the plot
             label_text = f"{network_name} → {transition_points[i+1][1] if i+1 < len(transition_points) else 'End'}"
             ax3.text(transition_time, y_max * 0.95, label_text,
-                    rotation=90, ha='right', va='top', fontsize=9, alpha=0.8)
+                    rotation=90, ha='right', va='top', fontsize=TRANSITION_FONT_SIZE, alpha=0.8)
     
     # Subplot 4: Absolute difference from baseline
     for i, ntopt_val in enumerate(sorted_ntopt_values[1:], 1):  # Skip baseline
@@ -630,7 +653,7 @@ def plot_ntopt_comparison_with_differences(gamma_value, time_col_index=0, value_
             # Add label at the top of the plot
             label_text = f"{network_name} → {transition_points[i+1][1] if i+1 < len(transition_points) else 'End'}"
             ax4.text(transition_time, y_max * 0.95, label_text,
-                    rotation=90, ha='right', va='top', fontsize=9, alpha=0.8)
+                    rotation=90, ha='right', va='top', fontsize=TRANSITION_FONT_SIZE, alpha=0.8)
     
     # Set titles and labels
     if column_names:
@@ -674,6 +697,13 @@ def plot_ntopt_comparison_with_differences(gamma_value, time_col_index=0, value_
         save_dir = os.path.join(base_dir, f"gamma_{gamma_value}_plots", f"comprehensive_ntopt_analysis_{safe_time_col}_vs_{safe_value_col}")
         os.makedirs(save_dir, exist_ok=True)
         save_path = os.path.join(save_dir, "comprehensive_analysis_loglog.png")
+        _lock_formatted_axis_labels(
+            fig,
+            [ax1, ax2, ax3, ax4],
+            column_names[time_col_index],
+            column_names[value_col_index],
+        )
+
         plt.savefig(save_path, dpi=300, bbox_inches='tight')
         print(f"Saved comprehensive LOG-LOG analysis to {save_dir}")
         
@@ -686,6 +716,13 @@ def plot_ntopt_comparison_with_differences(gamma_value, time_col_index=0, value_
             # Adjust the expansion to account for the title position
             expanded_extent.y1 += 0.3  # Add space at the top for the title
             subplot_path = os.path.join(save_dir, f"{name}.png")
+            _lock_formatted_axis_labels(
+                fig,
+                [ax1, ax2, ax3, ax4],
+                column_names[time_col_index],
+                column_names[value_col_index],
+            )
+
             fig.savefig(subplot_path, bbox_inches=expanded_extent, dpi=300)
         print(f"Saved individual subplots to {save_dir}")
     
@@ -876,7 +913,7 @@ def plot_ntopt_comparison_with_differences_linear(gamma_value, time_col_index=0,
             # Add label at the top of the plot
             label_text = f"{network_name} → {transition_points[i+1][1] if i+1 < len(transition_points) else 'End'}"
             ax1.text(transition_time, y_max * 0.95, label_text,
-                    rotation=90, ha='right', va='top', fontsize=9, alpha=0.8)
+                    rotation=90, ha='right', va='top', fontsize=TRANSITION_FONT_SIZE, alpha=0.8)
     
     # Subplot 2: Percentage difference from baseline
     for i, ntopt_val in enumerate(sorted_ntopt_values[1:], 1):  # Skip baseline
@@ -900,7 +937,7 @@ def plot_ntopt_comparison_with_differences_linear(gamma_value, time_col_index=0,
             # Add label at the top of the plot
             label_text = f"{network_name} → {transition_points[i+1][1] if i+1 < len(transition_points) else 'End'}"
             ax2.text(transition_time, y_max * 0.95, label_text,
-                    rotation=90, ha='right', va='top', fontsize=9, alpha=0.8)
+                    rotation=90, ha='right', va='top', fontsize=TRANSITION_FONT_SIZE, alpha=0.8)
     
     # Subplot 3: Normalized values (divide by baseline)
     for i, ntopt_val in enumerate(sorted_ntopt_values):
@@ -927,7 +964,7 @@ def plot_ntopt_comparison_with_differences_linear(gamma_value, time_col_index=0,
             # Add label at the top of the plot
             label_text = f"{network_name} → {transition_points[i+1][1] if i+1 < len(transition_points) else 'End'}"
             ax3.text(transition_time, y_max * 0.95, label_text,
-                    rotation=90, ha='right', va='top', fontsize=9, alpha=0.8)
+                    rotation=90, ha='right', va='top', fontsize=TRANSITION_FONT_SIZE, alpha=0.8)
     
     # Subplot 4: Absolute difference from baseline
     for i, ntopt_val in enumerate(sorted_ntopt_values[1:], 1):  # Skip baseline
@@ -953,7 +990,7 @@ def plot_ntopt_comparison_with_differences_linear(gamma_value, time_col_index=0,
             # Add label at the top of the plot
             label_text = f"{network_name} → {transition_points[i+1][1] if i+1 < len(transition_points) else 'End'}"
             ax4.text(transition_time, y_max * 0.95, label_text,
-                    rotation=90, ha='right', va='top', fontsize=16, alpha=0.8)
+                    rotation=90, ha='right', va='top', fontsize=TRANSITION_FONT_SIZE, alpha=0.8)
     
     # Set titles and labels
     if column_names:
@@ -985,8 +1022,25 @@ def plot_ntopt_comparison_with_differences_linear(gamma_value, time_col_index=0,
     ax3.axhline(y=1, color='black', linestyle='-', alpha=0.3)
     ax4.axhline(y=0, color='black', linestyle='-', alpha=0.3)
     
+    # Format x-axis to use scientific notation (x10^3)
+    from matplotlib.ticker import ScalarFormatter
+    for ax in [ax1, ax2, ax3, ax4]:
+        formatter = ScalarFormatter(useMathText=True)
+        formatter.set_scientific(True)
+        formatter.set_powerlimits((3, 3))  # Force 10^3 notation
+        ax.xaxis.set_major_formatter(formatter)
+    
     plt.tight_layout()
     plt.subplots_adjust(top=0.93, bottom=0.07, left=0.08, right=0.95, hspace=0.3, wspace=0.25)
+    
+    # Lock formatted axis labels BEFORE showing/saving the plot
+    if column_names:
+        _lock_formatted_axis_labels(
+            fig,
+            [ax1, ax2, ax3, ax4],
+            column_names[time_col_index],
+            column_names[value_col_index],
+        )
     
     # Save the comprehensive plot
     if column_names:
@@ -997,6 +1051,7 @@ def plot_ntopt_comparison_with_differences_linear(gamma_value, time_col_index=0,
         save_dir = os.path.join(base_dir, f"gamma_{gamma_value}_plots", f"comprehensive_ntopt_analysis_linear_{safe_time_col}_vs_{safe_value_col}")
         os.makedirs(save_dir, exist_ok=True)
         save_path = os.path.join(save_dir, "comprehensive_analysis_linear.png")
+
         plt.savefig(save_path, dpi=300, bbox_inches='tight')
         print(f"Saved comprehensive LINEAR analysis to {save_dir}")
         
@@ -1009,6 +1064,7 @@ def plot_ntopt_comparison_with_differences_linear(gamma_value, time_col_index=0,
             # Adjust the expansion to account for the title position
             expanded_extent.y1 += 0.1  # Add space at the top for the title
             subplot_path = os.path.join(save_dir, f"{name}.png")
+
             fig.savefig(subplot_path, bbox_inches=expanded_extent, dpi=300)
         print(f"Saved individual subplots to {save_dir}")
     
@@ -1030,7 +1086,6 @@ def plot_ntopt_comparison_with_differences_linear(gamma_value, time_col_index=0,
             pct_change = (final_value - final_values[baseline_ntopt]) / final_values[baseline_ntopt] * 100
             abs_change = final_value - final_values[baseline_ntopt]
             print(f"nt_opt = {ntopt_val}: {final_value:.1f} ({pct_change:+.2f}%, {abs_change:+.1f})")
-
 def plot_specific_ntopt_comparison(gamma_value, ntopt_values, time_col_index=0, value_col_index=1, timestep_interval=1000):
     """
     Plot cumulative curves for specific nt_opt values with points at regular timestep intervals.
@@ -1187,7 +1242,7 @@ def plot_specific_ntopt_comparison(gamma_value, ntopt_values, time_col_index=0, 
             # Add label at the top of the plot
             label_text = f"{network_name} → {transition_points[i+1][1] if i+1 < len(transition_points) else 'End'}"
             plt.text(transition_time, y_max * 0.95, label_text,
-                    rotation=90, ha='right', va='top', fontsize=9, alpha=0.8)
+                    rotation=90, ha='right', va='top', fontsize=TRANSITION_FONT_SIZE, alpha=0.8)
     
     # Get column names for labeling
     column_names = None
@@ -1197,6 +1252,7 @@ def plot_specific_ntopt_comparison(gamma_value, ntopt_values, time_col_index=0, 
             break
     
     # Set labels and title
+    
     if column_names:
         formatted_time_col = format_column_name(column_names[time_col_index])
         formatted_value_col = format_column_name(column_names[value_col_index])
@@ -1226,6 +1282,7 @@ def plot_specific_ntopt_comparison(gamma_value, ntopt_values, time_col_index=0, 
         save_path = os.path.join(save_dir, "plot.png")
 
         # Save the plot
+        
         plt.savefig(save_path, dpi=300, bbox_inches='tight')
 
         print(f"saved figure to {save_dir}")

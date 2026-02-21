@@ -1,0 +1,4 @@
+time_seconds, weighted_integrated_cars, cars_entered, cars_exited, time_int_cars_exits, time_int_cars_main, LOSA_count, LOSB_count, LOSC_count, LOSD_count, LOSE_count, segment_LOSA_count, segment_LOSB_count, segment_LOSC_count, segment_LOSD_count, segment_LOSE_count
+0.0, 0.042786875188839224, 0.0958333303960882, 0.055352355912251586, 0.0003162991766414373, 0.18928187420161613, 24, 2, 4, 0, 0, 55, 5, 4, 3, 13
+10.0, 4.338438112715128, 9.67916657164272, 5.5905879471374185, 0.03194621684078512, 19.21968375926001, 24, 3, 3, 0, 0, 55, 5, 2, 5, 13
+18.6, 8.015648623424084, 17.82499986144858, 10.295538199678816, 0.058831646855307236, 35.55466620106122, 24, 3, 3, 0, 0, 55, 5, 2, 6, 12
